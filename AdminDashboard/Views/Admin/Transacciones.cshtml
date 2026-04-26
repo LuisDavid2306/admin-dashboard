@@ -1,0 +1,150 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Transacciones";
+}
+
+@using AdminDashboard.Models.DTO
+@model List<TransaccionAdminDto>
+
+<div class="page-header">
+    <h1>Transacciones</h1>
+    <p>Historial completo de movimientos en el sistema.</p>
+</div>
+
+<!-- Filtros -->
+<form method="get" style="margin-bottom:24px;">
+    <div class="card-panel">
+        <div class="card-panel-body" style="padding:18px 24px;">
+            <div style="display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+                <div>
+                    <label class="form-label-modern">Desde</label>
+                    <input type="date" name="fechaInicio"
+                           value="@Context.Request.Query["fechaInicio"]"
+                           class="form-control-modern" style="width:170px;" />
+                </div>
+                <div>
+                    <label class="form-label-modern">Hasta</label>
+                    <input type="date" name="fechaFin"
+                           value="@Context.Request.Query["fechaFin"]"
+                           class="form-control-modern" style="width:170px;" />
+                </div>
+                <div>
+                    <label class="form-label-modern">Tipo</label>
+                    <input type="text" name="tipo"
+                           value="@Context.Request.Query["tipo"]"
+                           placeholder="Ej: Depósito"
+                           class="form-control-modern" style="width:150px;" />
+                </div>
+                <div>
+                    <label class="form-label-modern">Usuario</label>
+                    <input type="text" name="usuario"
+                           value="@Context.Request.Query["usuario"]"
+                           placeholder="Nombre o email"
+                           class="form-control-modern" style="width:180px;" />
+                </div>
+                <button type="submit" class="btn-primary-modern" style="display:flex; align-items:center; gap:7px;">
+                    <i class="bi bi-funnel"></i> Filtrar
+                </button>
+                <a href="/Admin/Transacciones"
+                       style="padding:10px 16px; border-radius:10px; border:1.5px solid var(--border); color:var(--text-muted); text-decoration:none; font-size:13px; transition:all .15s; display:flex; align-items:center; gap:6px;"
+                       onmouseover="this.style.borderColor='var(--indigo)';this.style.color='var(--indigo)'"
+                       onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+                    <i class="bi bi-x-lg"></i> Limpiar
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="card-panel">
+    <div class="card-panel-header">
+        <div>
+            <h5>Registro de transacciones</h5>
+            <div class="subtitle">Ordenado por fecha descendente</div>
+        </div>
+        @if (Model != null)
+        {
+            <span class="pill-badge indigo">@Model.Count resultados</span>
+        }
+    </div>
+
+    <table class="table-modern">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Tipo</th>
+                <th>Monto (S/.)</th>
+                <th>Origen</th>
+                <th>Destino</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var t in Model)
+                {
+                    <tr>
+                        <td style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted);">
+                            #@t.CodTransaccion
+                        </td>
+                        <td>
+                            @{
+                                var tipoLower = t.Tipo?.ToLower() ?? "";
+                                var (badgeClass, badgeIcon) = tipoLower switch
+                                {
+                                    var s when s.Contains("depósito") || s.Contains("deposito") => ("green", "bi-arrow-down-circle"),
+                                    var s when s.Contains("retiro") => ("red", "bi-arrow-up-circle"),
+                                    var s when s.Contains("transferencia") => ("indigo", "bi-arrow-left-right"),
+                                    _ => ("yellow", "bi-circle")
+                                };
+                            }
+                            <span class="pill-badge @badgeClass">
+                                <i class="bi @badgeIcon"></i> @t.Tipo
+                            </span>
+                        </td>
+                        <td style="font-family:'DM Mono',monospace; font-weight:600; color:var(--text);">
+                            @t.Monto.ToString("N2")
+                        </td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="width:26px;height:26px;background:var(--indigo-soft);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--indigo);flex-shrink:0;">
+                                    @(t.UsuarioOrigen?.Length > 0 ? t.UsuarioOrigen.Substring(0, 1).ToUpper() : "?")
+                                </div>
+                                <span style="font-size:13px;">@t.UsuarioOrigen</span>
+                            </div>
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(t.UsuarioDestino))
+                            {
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <div style="width:26px;height:26px;background:var(--green-soft);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#059669;flex-shrink:0;">
+                                        @t.UsuarioDestino.Substring(0, 1).ToUpper()
+                                    </div>
+                                    <span style="font-size:13px;">@t.UsuarioDestino</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <span style="color:var(--text-muted); font-size:13px;">—</span>
+                            }
+                        </td>
+                        <td style="font-size:13px; color:var(--text-muted); font-family:'DM Mono',monospace;">
+                            @t.Fecha.ToString("dd/MM/yyyy")
+                            <span style="display:block; font-size:11px;">@t.Fecha.ToString("HH:mm")</span>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6" style="text-align:center; padding:48px; color:var(--text-muted);">
+                        <div style="font-size:28px; margin-bottom:8px;">📭</div>
+                        No hay transacciones en este rango de fechas.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

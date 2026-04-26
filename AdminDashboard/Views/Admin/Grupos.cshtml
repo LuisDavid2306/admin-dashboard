@@ -1,0 +1,91 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Grupos de Ahorro";
+}
+
+@using AdminDashboard.Models.DTO
+@model List<GrupoAdminDto>
+
+<div class="page-header">
+    <h1>Grupos de Ahorro</h1>
+    <p>Todos los fondos colaborativos activos en la plataforma.</p>
+</div>
+
+@if (Model == null)
+{
+    <div style="background:var(--red-soft); border:1px solid rgba(239,68,68,.2); border-radius:12px; padding:16px 20px; color:#dc2626; font-size:14px;">
+        ⚠ No se pudo cargar la información de grupos.
+    </div>
+}
+else
+{
+    <!-- Cards de grupos -->
+    <div class="row g-3">
+        @foreach (var g in Model)
+        {
+                double progreso = 0;
+                if (g.MontoObjetivo > 0)
+                    progreso = Math.Min(100, Math.Max(0, (double)g.MontoActual / (double)g.MontoObjetivo * 100));
+
+                var progressColor = progreso < 30 ? "#ef4444" : progreso < 70 ? "#f59e0b" : "#10b981";
+                var badgeClass = g.Estado?.ToLower() switch {
+                    "activo" => "green",
+                    "completado" => "indigo",
+                    "cancelado" => "red",
+                    _ => "yellow"
+                };
+            <div class="col-md-6 col-xl-4">
+                <div class="card-panel" style="height:100%; transition: box-shadow .2s, transform .2s;"
+                     onmouseover="this.style.boxShadow='0 8px 24px rgba(91,79,207,.1)';this.style.transform='translateY(-2px)'"
+                     onmouseout="this.style.boxShadow='none';this.style.transform='none'">
+
+                    <div style="padding:20px 22px 14px;">
+                        <!-- Header del grupo -->
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+                            <div style="display:flex; align-items:center; gap:11px;">
+                                <div style="width:40px;height:40px;background:var(--indigo-soft);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;">
+                                    🐷
+                                </div>
+                                <div>
+                                    <div style="font-size:15px; font-weight:600; color:var(--text);">@g.Nombre</div>
+                                    <div style="font-size:11px; color:var(--text-muted);">@g.CantidadMiembros miembro@(g.CantidadMiembros != 1 ? "s" : "")</div>
+                                </div>
+                            </div>
+                            <span class="pill-badge @badgeClass">@g.Estado</span>
+                        </div>
+
+                        <!-- Montos -->
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <div>
+                                <div style="font-size:11px; color:var(--text-muted); font-weight:500; letter-spacing:.3px; text-transform:uppercase; margin-bottom:2px;">Recaudado</div>
+                                <div style="font-size:20px; font-weight:700; color:var(--text); font-family:'DM Mono',monospace;">S/ @g.MontoActual.ToString("N0")</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:11px; color:var(--text-muted); font-weight:500; letter-spacing:.3px; text-transform:uppercase; margin-bottom:2px;">Meta</div>
+                                <div style="font-size:20px; font-weight:700; color:var(--text-muted); font-family:'DM Mono',monospace;">S/ @g.MontoObjetivo.ToString("N0")</div>
+                            </div>
+                        </div>
+
+                        <!-- Barra de progreso -->
+                        <div style="height:6px; background:var(--border); border-radius:999px; margin-bottom:6px; overflow:hidden;">
+                            <div style="height:100%; width:@progreso.ToString("0.##")%; background:@progressColor; border-radius:999px; transition:width .4s ease;"></div>
+                        </div>
+                        <div style="font-size:12px; color:var(--text-muted); text-align:right; margin-bottom:16px;">
+                            @progreso.ToString("0")% completado
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div style="padding:12px 22px; border-top:1px solid var(--border);">
+                        <a href="/Admin/GrupoDetalle?codgrupo=@g.CodGrupo"
+                           style="display:flex; align-items:center; justify-content:center; gap:7px; width:100%; padding:9px; background:var(--indigo-soft); border:1px solid var(--border); border-radius:9px; color:var(--indigo); text-decoration:none; font-size:13px; font-weight:500; transition:all .15s;"
+                           onmouseover="this.style.background='var(--indigo)';this.style.color='#fff';this.style.borderColor='var(--indigo)'"
+                           onmouseout="this.style.background='var(--indigo-soft)';this.style.color='var(--indigo)';this.style.borderColor='var(--border)'">
+                            <i class="bi bi-eye"></i> Ver detalle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

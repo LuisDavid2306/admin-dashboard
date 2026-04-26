@@ -1,0 +1,229 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Dashboard";
+}
+
+@using AdminDashboard.Models
+@model DashboardViewModel
+
+<div class="page-header">
+    <h1>Dashboard</h1>
+    <p>Resumen de actividad y métricas del sistema Koink.</p>
+</div>
+
+<!-- Filtro de fechas -->
+<form method="get" style="margin-bottom: 28px;">
+    <div style="display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+        <div>
+            <label class="form-label-modern">Desde</label>
+            <input type="date" name="fechaInicio"
+                   value="@Context.Request.Query["fechaInicio"]"
+                   class="form-control-modern" style="width:180px;" />
+        </div>
+        <div>
+            <label class="form-label-modern">Hasta</label>
+            <input type="date" name="fechaFin"
+                   value="@Context.Request.Query["fechaFin"]"
+                   class="form-control-modern" style="width:180px;" />
+        </div>
+        <button type="submit" class="btn-primary-modern">
+            Aplicar filtro
+        </button>
+    </div>
+</form>
+
+@if (Model != null)
+{
+    <!-- STAT CARDS -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card-stat">
+                <div class="stat-icon" style="background:var(--indigo-soft); color:var(--indigo);">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div class="stat-label">Total Usuarios</div>
+                <div class="stat-value">@Model.TotalUsuarios</div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card-stat">
+                <div class="stat-icon" style="background:var(--green-soft); color:#059669;">
+                    <i class="bi bi-arrow-left-right"></i>
+                </div>
+                <div class="stat-label">Transacciones</div>
+                <div class="stat-value">@Model.TotalTransacciones</div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card-stat">
+                <div class="stat-icon" style="background:var(--yellow-soft); color:#d97706;">
+                    <i class="bi bi-piggy-bank-fill"></i>
+                </div>
+                <div class="stat-label">Grupos de Ahorro</div>
+                <div class="stat-value">@Model.TotalGrupos</div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card-stat">
+                <div class="stat-icon" style="background:rgba(91,79,207,.1); color:var(--indigo);">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+                <div class="stat-label">Dinero en Sistema</div>
+                <div class="stat-value" style="font-size:22px;">S/ @Model.TotalDineroSistema.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRÁFICOS -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-7">
+            <div class="card-panel">
+                <div class="card-panel-header">
+                    <div>
+                        <h5>Transacciones por día</h5>
+                        <div class="subtitle">Volumen de operaciones en el período</div>
+                    </div>
+                    <span class="pill-badge indigo">Línea de tiempo</span>
+                </div>
+                <div class="card-panel-body">
+                    <canvas id="chartTransacciones" height="110"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card-panel">
+                <div class="card-panel-header">
+                    <div>
+                        <h5>Flujo de dinero</h5>
+                        <div class="subtitle">Montos diarios en S/.</div>
+                    </div>
+                </div>
+                <div class="card-panel-body">
+                    <canvas id="chartDinero" height="110"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOP USUARIOS -->
+    <div class="card-panel">
+        <div class="card-panel-header">
+            <div>
+                <h5>Top Usuarios por Movimiento</h5>
+                <div class="subtitle">Ranking por volumen transaccionado en el período</div>
+            </div>
+            <span class="pill-badge green">
+                <span style="width:6px;height:6px;background:#10b981;border-radius:50%;display:inline-block;"></span>
+                Activos
+            </span>
+        </div>
+
+        <table class="table-modern">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Usuario</th>
+                    <th>Total Movido (S/.)</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int rank = 1;
+                }
+                @foreach (var user in Model.TopUsuarios)
+                {
+                    <tr>
+                        <td style="color:var(--text-muted); font-family:'DM Mono',monospace; font-size:13px; font-weight:500;">
+                            @rank.ToString("D2")
+                        </td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="width:32px;height:32px;background:var(--indigo-soft);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--indigo);border:1.5px solid var(--border);">
+                                    @user.Nombre.Substring(0, 1).ToUpper()
+                                </div>
+                                <span style="font-weight:500; color:var(--text);">@user.Nombre</span>
+                            </div>
+                        </td>
+                        <td style="font-family:'DM Mono',monospace; font-weight:500;">@user.TotalMovido.ToString("N2")</td>
+                        <td><span class="pill-badge green">Activo</span></td>
+                    </tr>
+                    rank++;
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const transacciones = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TransaccionesPorDia));
+        const dinero        = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DineroPorDia));
+
+        const indigo  = '#5B4FCF';
+        const green   = '#10b981';
+        const gridCol = 'rgba(232,229,248,.8)';
+        const tickCol = '#8b87b8';
+
+        Chart.defaults.color       = tickCol;
+        Chart.defaults.font.family = "'DM Sans', sans-serif";
+        Chart.defaults.font.size   = 12;
+
+        new Chart(document.getElementById('chartTransacciones'), {
+            type: 'line',
+            data: {
+                labels: transacciones.map(x => x.Fecha),
+                datasets: [{
+                    label: 'Transacciones',
+                    data: transacciones.map(x => x.Cantidad),
+                    borderColor: indigo,
+                    backgroundColor: 'rgba(91,79,207,.07)',
+                    borderWidth: 2.5,
+                    pointRadius: 4,
+                    pointBackgroundColor: indigo,
+                    fill: true,
+                    tension: .4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: gridCol }, ticks: { color: tickCol } },
+                    y: { grid: { color: gridCol }, ticks: { color: tickCol } }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('chartDinero'), {
+            type: 'bar',
+            data: {
+                labels: dinero.map(x => x.Fecha),
+                datasets: [{
+                    label: 'S/.',
+                    data: dinero.map(x => x.Total),
+                    backgroundColor: 'rgba(91,79,207,.12)',
+                    borderColor: indigo,
+                    borderWidth: 1.5,
+                    borderRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: gridCol }, ticks: { color: tickCol } },
+                    y: { grid: { color: gridCol }, ticks: { color: tickCol } }
+                }
+            }
+        });
+    </script>
+}
+else
+{
+    <div style="display:flex; align-items:center; justify-content:center; height:200px; color:var(--text-muted); font-size:14px;">
+        Cargando datos del sistema...
+    </div>
+}

@@ -1,0 +1,267 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Detalle del Grupo";
+}
+
+@using AdminDashboard.Models.DTO
+@model GrupoDetalleDto
+
+@if (Model == null)
+{
+    <div style="background:var(--red-soft); border:1px solid rgba(239,68,68,.2); border-radius:12px; padding:16px 20px; color:#dc2626; font-size:14px;">
+        ⚠ No se pudo cargar la información del grupo.
+    </div>
+    return;
+}
+
+@{
+    var progreso = Math.Min(100, Math.Max(0, (double)Model.Progreso));
+    var progressColor = progreso < 30 ? "#ef4444" : progreso < 70 ? "#f59e0b" : "#10b981";
+}
+
+<!-- Header -->
+<div class="page-header" style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+    <div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+            <a href="/Admin/Grupos"
+               style="width:32px;height:32px;background:var(--surface);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);text-decoration:none;font-size:14px;transition:all .15s;"
+               onmouseover="this.style.borderColor='var(--indigo)';this.style.color='var(--indigo)'"
+               onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1 style="margin:0;">@Model.Nombre</h1>
+        </div>
+        <p>Detalle del fondo de ahorro colaborativo.</p>
+    </div>
+</div>
+
+<!-- Tarjeta resumen de progreso -->
+<div class="card-panel mb-4" style="background: linear-gradient(135deg, var(--indigo) 0%, #4840b0 100%); border:none;">
+    <div style="padding:28px 32px;">
+        <div class="row align-items-center g-4">
+            <div class="col-md-6">
+                <div style="font-size:12px; color:rgba(255,255,255,.6); font-weight:500; letter-spacing:.5px; text-transform:uppercase; margin-bottom:4px;">Monto recaudado</div>
+                <div style="font-size:36px; font-weight:700; color:#fff; font-family:'DM Mono',monospace; letter-spacing:-1px;">
+                    S/ @Model.MontoActual.ToString("N2")
+                </div>
+                <div style="font-size:14px; color:rgba(255,255,255,.7); margin-top:2px;">
+                    de S/ @Model.MontoObjetivo.ToString("N2") objetivo
+                </div>
+
+                <!-- Progress bar -->
+                <div style="margin-top:16px;">
+                    <div style="height:8px; background:rgba(255,255,255,.2); border-radius:999px; overflow:hidden;">
+                        <div style="height:100%; width:@progreso.ToString("0.##")%; background:#fff; border-radius:999px;"></div>
+                    </div>
+                    <div style="font-size:13px; color:rgba(255,255,255,.8); margin-top:6px; font-weight:600;">
+                        @progreso.ToString("0.##")% completado
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div style="background:rgba(255,255,255,.12); border-radius:12px; padding:16px;">
+                            <div style="font-size:11px; color:rgba(255,255,255,.6); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px;">Miembros</div>
+                            <div style="font-size:24px; font-weight:700; color:#fff; font-family:'DM Mono',monospace;">
+                                @(Model.Miembros?.Count ?? 0)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div style="background:rgba(255,255,255,.12); border-radius:12px; padding:16px;">
+                            <div style="font-size:11px; color:rgba(255,255,255,.6); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px;">Aportes</div>
+                            <div style="font-size:24px; font-weight:700; color:#fff; font-family:'DM Mono',monospace;">
+                                @(Model.Aportes?.Count ?? 0)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div style="background:rgba(255,255,255,.12); border-radius:12px; padding:16px;">
+                            <div style="font-size:11px; color:rgba(255,255,255,.6); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px;">Retiros</div>
+                            <div style="font-size:24px; font-weight:700; color:#fff; font-family:'DM Mono',monospace;">
+                                @(Model.Retiros?.Count ?? 0)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div style="background:rgba(255,255,255,.12); border-radius:12px; padding:16px;">
+                            <div style="font-size:11px; color:rgba(255,255,255,.6); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px;">Restante</div>
+                            <div style="font-size:20px; font-weight:700; color:#fff; font-family:'DM Mono',monospace;">
+                                S/@((Model.MontoObjetivo - Model.MontoActual).ToString("N0"))
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- MIEMBROS -->
+    <div class="col-lg-5">
+        <div class="card-panel" style="height:100%;">
+            <div class="card-panel-header">
+                <div>
+                    <h5>Miembros</h5>
+                    <div class="subtitle">Participantes del fondo</div>
+                </div>
+                <span class="pill-badge indigo">@(Model.Miembros?.Count ?? 0)</span>
+            </div>
+
+            @if (Model.Miembros != null && Model.Miembros.Any())
+            {
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Participante</th>
+                            <th>Fecha de unión</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var m in Model.Miembros)
+                        {
+                            <tr>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:9px;">
+                                        <div style="width:30px;height:30px;background:var(--indigo-soft);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--indigo);flex-shrink:0;">
+                                            @m.Nombre.Substring(0,1).ToUpper()
+                                        </div>
+                                        <span style="font-size:13px; font-weight:500;">@m.Nombre</span>
+                                    </div>
+                                </td>
+                                <td style="font-size:12px; color:var(--text-muted); font-family:'DM Mono',monospace;">
+                                    @m.FechaUnion.ToString("dd/MM/yyyy")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div style="padding:40px; text-align:center; color:var(--text-muted); font-size:14px;">
+                    <div style="font-size:28px; margin-bottom:8px;">👥</div>
+                    Sin miembros registrados
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <!-- APORTES -->
+        <div class="card-panel mb-4">
+            <div class="card-panel-header">
+                <div>
+                    <h5>Aportes</h5>
+                    <div class="subtitle">Contribuciones al fondo</div>
+                </div>
+                <span class="pill-badge green">@(Model.Aportes?.Count ?? 0)</span>
+            </div>
+
+            @if (Model.Aportes != null && Model.Aportes.Any())
+            {
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Monto (S/.)</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model.Aportes)
+                        {
+                            <tr>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <div style="width:28px;height:28px;background:var(--green-soft);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#059669;flex-shrink:0;">
+                                            @a.Usuario.Substring(0,1).ToUpper()
+                                        </div>
+                                        <span style="font-size:13px;">@a.Usuario</span>
+                                    </div>
+                                </td>
+                                <td style="font-family:'DM Mono',monospace; font-weight:600; color:#059669;">
+                                    +@a.Monto.ToString("N2")
+                                </td>
+                                <td style="font-size:12px; color:var(--text-muted); font-family:'DM Mono',monospace;">
+                                    @a.Fecha.ToString("dd/MM/yyyy")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div style="padding:32px; text-align:center; color:var(--text-muted); font-size:14px;">
+                    <div style="font-size:24px; margin-bottom:8px;">💰</div>
+                    Sin aportes registrados
+                </div>
+            }
+        </div>
+
+        <!-- RETIROS -->
+        <div class="card-panel">
+            <div class="card-panel-header">
+                <div>
+                    <h5>Retiros</h5>
+                    <div class="subtitle">Solicitudes de retiro del fondo</div>
+                </div>
+                <span class="pill-badge yellow">@(Model.Retiros?.Count ?? 0)</span>
+            </div>
+
+            @if (Model.Retiros != null && Model.Retiros.Any())
+            {
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Monto (S/.)</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.Retiros)
+                        {
+                                var rBadge = r.Estado?.ToLower() switch {
+                                    "aprobado" => "green",
+                                    "pendiente" => "yellow",
+                                    _ => "red"
+                                };
+                            <tr>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <div style="width:28px;height:28px;background:var(--red-soft);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#dc2626;flex-shrink:0;">
+                                            @r.Usuario.Substring(0,1).ToUpper()
+                                        </div>
+                                        <span style="font-size:13px;">@r.Usuario</span>
+                                    </div>
+                                </td>
+                                <td style="font-family:'DM Mono',monospace; font-weight:600; color:#dc2626;">
+                                    −@r.Monto.ToString("N2")
+                                </td>
+                                <td style="font-size:12px; color:var(--text-muted); font-family:'DM Mono',monospace;">
+                                    @r.Fecha.ToString("dd/MM/yyyy")
+                                </td>
+                                <td>
+                                    <span class="pill-badge @rBadge">@r.Estado</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div style="padding:32px; text-align:center; color:var(--text-muted); font-size:14px;">
+                    <div style="font-size:24px; margin-bottom:8px;">📤</div>
+                    Sin retiros registrados
+                </div>
+            }
+        </div>
+    </div>
+</div>

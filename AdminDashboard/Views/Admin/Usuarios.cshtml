@@ -1,0 +1,113 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Usuarios";
+}
+
+@using AdminDashboard.Models
+
+<div class="page-header" style="display:flex; align-items:center; justify-content:space-between;">
+    <div>
+        <h1>Usuarios</h1>
+        <p>Gestión de cuentas registradas en el sistema.</p>
+    </div>
+    <a href="/Admin/CrearUsuario" class="btn-primary-modern" style="text-decoration:none; display:inline-flex; align-items:center; gap:7px;">
+        <i class="bi bi-plus-lg"></i> Nuevo usuario
+    </a>
+</div>
+
+<!-- Buscador -->
+<form method="get" style="margin-bottom:24px;">
+    <div style="position:relative; max-width:360px;">
+        <i class="bi bi-search" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:14px;"></i>
+        <input type="text" name="search"
+               placeholder="Buscar por nombre, email..."
+               value="@Context.Request.Query["search"]"
+               class="form-control-modern"
+               style="padding-left:40px;" />
+    </div>
+</form>
+
+<div class="card-panel">
+    <div class="card-panel-header">
+        <div>
+            <h5>Lista de usuarios</h5>
+            <div class="subtitle">Todos los usuarios activos en Koink</div>
+        </div>
+    </div>
+
+    <table class="table-modern">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Saldo (S/.)</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:34px;height:34px;background:var(--indigo-soft);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--indigo);border:1.5px solid var(--border);flex-shrink:0;">
+                                @user.Nombre.Substring(0, 1).ToUpper()
+                            </div>
+                            <div>
+                                <div style="font-weight:500; color:var(--text); font-size:14px;">@user.Nombre</div>
+                                <div style="font-size:11px; color:var(--text-muted);">ID #@user.IdUsuario</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="color:var(--text-2);">@user.Email</td>
+                    <td style="color:var(--text-2);">@user.Telefono</td>
+                    <td style="font-family:'DM Mono',monospace; font-weight:500; color:var(--text);">
+                        @user.Saldo.ToString("N2")
+                    </td>
+                    <td>
+                        @if (user.Saldo > 0)
+                        {
+                            <span class="pill-badge green">Con saldo</span>
+                        }
+                        else
+                        {
+                            <span class="pill-badge" style="background:var(--border); color:var(--text-muted);">Sin saldo</span>
+                        }
+                    </td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <a href="/Admin/EditarUsuario?id=@user.IdUsuario"
+                                   title="Editar"
+                                   style="width:32px;height:32px;background:var(--indigo-soft);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--indigo);text-decoration:none;font-size:14px;transition:all .15s;"
+                                   onmouseover="this.style.background='var(--indigo)';this.style.color='#fff'"
+                                   onmouseout="this.style.background='var(--indigo-soft)';this.style.color='var(--indigo)'">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            @if (user.Saldo > 0)
+                            {
+                                <button disabled title="No se puede eliminar: tiene saldo"
+                                        style="width:32px;height:32px;background:var(--border);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:14px;cursor:not-allowed;opacity:.5;">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <a href="/Admin/EliminarUsuario?id=@user.IdUsuario"
+                                       onclick="return confirm('¿Eliminar a @user.Nombre? Esta acción no se puede deshacer.')"
+                                       title="Eliminar"
+                                       style="width:32px;height:32px;background:var(--red-soft);border:1px solid rgba(239,68,68,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#dc2626;text-decoration:none;font-size:14px;transition:all .15s;"
+                                       onmouseover="this.style.background='#ef4444';this.style.color='#fff'"
+                                       onmouseout="this.style.background='var(--red-soft)';this.style.color='#dc2626'">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

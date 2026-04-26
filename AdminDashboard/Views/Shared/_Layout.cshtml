@@ -1,0 +1,302 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Koink Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        :root {
+            --indigo:        #5B4FCF;
+            --indigo-dark:   #4840b0;
+            --indigo-glow:   rgba(91,79,207,.15);
+            --indigo-soft:   rgba(91,79,207,.08);
+            --bg:            #f4f3fb;
+            --surface:       #ffffff;
+            --surface-2:     #f8f7fe;
+            --border:        #e8e5f8;
+            --border-strong: #d4cff5;
+            --text:          #1a1635;
+            --text-2:        #4b4775;
+            --text-muted:    #8b87b8;
+            --green:         #10b981;
+            --green-soft:    rgba(16,185,129,.1);
+            --yellow-soft:   rgba(245,158,11,.1);
+            --red-soft:      rgba(239,68,68,.1);
+            --blue-soft:     rgba(59,130,246,.1);
+            --sidebar-w:     260px;
+            --topbar-h:      64px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            min-height: 100vh;
+            background: var(--indigo);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 100;
+            box-shadow: 4px 0 28px rgba(91,79,207,.3);
+        }
+
+        .sidebar-brand {
+            padding: 28px 24px 22px;
+            border-bottom: 1px solid rgba(255,255,255,.12);
+        }
+        .sidebar-brand .logo-mark {
+            display: flex; align-items: center; gap: 11px;
+            text-decoration: none;
+        }
+        .sidebar-brand .logo-icon {
+            width: 38px; height: 38px;
+            background: rgba(255,255,255,.2);
+            border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 19px; color: #fff; flex-shrink: 0;
+        }
+        .sidebar-brand .logo-text {
+            font-size: 19px; font-weight: 700; color: #fff; letter-spacing: -.3px;
+        }
+        .sidebar-brand .logo-sub {
+            font-size: 10px; color: rgba(255,255,255,.5); font-weight: 400;
+            letter-spacing: .7px; text-transform: uppercase; display: block; margin-top: -1px;
+        }
+
+        .sidebar-nav {
+            flex: 1; padding: 18px 14px;
+            display: flex; flex-direction: column; gap: 2px;
+        }
+        .nav-section-label {
+            font-size: 10px; font-weight: 600; letter-spacing: 1.1px;
+            text-transform: uppercase; color: rgba(255,255,255,.4);
+            padding: 16px 12px 7px;
+        }
+        .nav-link {
+            display: flex; align-items: center; gap: 11px;
+            padding: 10px 14px; border-radius: 10px;
+            color: rgba(255,255,255,.7); text-decoration: none;
+            font-size: 14px; font-weight: 400;
+            transition: all .18s ease; position: relative;
+        }
+        .nav-link i { font-size: 16px; width: 18px; flex-shrink: 0; }
+        .nav-link:hover { background: rgba(255,255,255,.1); color: #fff; }
+        .nav-link.active {
+            background: rgba(255,255,255,.18); color: #fff; font-weight: 500;
+        }
+        .nav-link.active::before {
+            content: ''; position: absolute; left: 0; top: 50%;
+            transform: translateY(-50%); width: 3px; height: 20px;
+            background: #fff; border-radius: 0 3px 3px 0;
+        }
+
+        .sidebar-footer {
+            padding: 16px 18px;
+            border-top: 1px solid rgba(255,255,255,.12);
+        }
+        .user-pill { display: flex; align-items: center; gap: 11px; }
+        .user-avatar {
+            width: 34px; height: 34px; background: rgba(255,255,255,.2);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 13px; color: #fff; font-weight: 600; flex-shrink: 0;
+        }
+        .user-info { flex: 1; overflow: hidden; }
+        .user-name { font-size: 13px; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-role { font-size: 11px; color: rgba(255,255,255,.5); }
+        .btn-logout {
+            background: none; border: none; color: rgba(255,255,255,.5);
+            font-size: 17px; cursor: pointer; padding: 4px; border-radius: 6px;
+            transition: color .15s;
+        }
+        .btn-logout:hover { color: #fca5a5; }
+
+        /* ── MAIN ── */
+        .main-wrap {
+            margin-left: var(--sidebar-w); flex: 1;
+            display: flex; flex-direction: column; min-height: 100vh;
+        }
+        .topbar {
+            height: var(--topbar-h); background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px; display: flex; align-items: center;
+            justify-content: space-between; position: sticky; top: 0; z-index: 50;
+        }
+        .topbar-title { font-size: 16px; font-weight: 600; color: var(--text); }
+        .topbar-actions { display: flex; align-items: center; gap: 10px; }
+        .badge-notif {
+            width: 36px; height: 36px; background: var(--surface-2);
+            border: 1px solid var(--border); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); font-size: 16px; cursor: pointer;
+            transition: all .15s; text-decoration: none;
+        }
+        .badge-notif:hover { border-color: var(--indigo); color: var(--indigo); background: var(--indigo-soft); }
+
+        .page-content { flex: 1; padding: 32px; }
+
+        /* ── COMPONENTS ── */
+        .page-header { margin-bottom: 28px; }
+        .page-header h1 { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -.4px; }
+        .page-header p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+
+        .card-stat {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; padding: 22px 24px;
+            transition: box-shadow .2s, transform .2s;
+        }
+        .card-stat:hover { box-shadow: 0 8px 24px rgba(91,79,207,.1); transform: translateY(-2px); }
+        .card-stat .stat-label {
+            font-size: 12px; font-weight: 500; letter-spacing: .4px;
+            text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;
+        }
+        .card-stat .stat-value {
+            font-size: 28px; font-weight: 700; color: var(--text);
+            letter-spacing: -.5px; font-family: 'DM Mono', monospace;
+        }
+        .card-stat .stat-icon {
+            width: 40px; height: 40px; border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; float: right; margin-top: -4px;
+        }
+
+        .card-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .card-panel-header {
+            padding: 18px 24px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .card-panel-header h5 { font-size: 15px; font-weight: 600; color: var(--text); margin: 0; }
+        .card-panel-header .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .card-panel-body { padding: 20px 24px; }
+
+        .table-modern { width: 100%; border-collapse: collapse; }
+        .table-modern th {
+            font-size: 11px; font-weight: 600; letter-spacing: .7px;
+            text-transform: uppercase; color: var(--text-muted);
+            padding: 12px 18px; border-bottom: 1px solid var(--border); text-align: left;
+        }
+        .table-modern td {
+            padding: 13px 18px; font-size: 14px; color: var(--text-2);
+            border-bottom: 1px solid var(--border);
+        }
+        .table-modern tr:last-child td { border-bottom: none; }
+        .table-modern tbody tr:hover td { background: var(--surface-2); }
+
+        .form-label-modern {
+            font-size: 12px; font-weight: 500; color: var(--text-muted);
+            letter-spacing: .2px; margin-bottom: 6px; display: block;
+        }
+        .form-control-modern {
+            background: var(--surface-2); border: 1.5px solid var(--border);
+            color: var(--text); border-radius: 10px; padding: 10px 14px;
+            font-size: 14px; font-family: 'DM Sans', sans-serif;
+            width: 100%; transition: border-color .15s, box-shadow .15s; outline: none;
+        }
+        .form-control-modern:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-glow); }
+        .form-control-modern::-webkit-calendar-picker-indicator { filter: none; opacity: .5; }
+
+        .btn-primary-modern {
+            background: var(--indigo); color: #fff; border: none;
+            border-radius: 10px; padding: 10px 22px; font-size: 14px;
+            font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer;
+            transition: background .15s, transform .1s, box-shadow .15s;
+        }
+        .btn-primary-modern:hover { background: var(--indigo-dark); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(91,79,207,.3); }
+        .btn-primary-modern:active { transform: translateY(0); }
+
+        .pill-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 500;
+        }
+        .pill-badge.green  { background: var(--green-soft);  color: #059669; }
+        .pill-badge.yellow { background: var(--yellow-soft); color: #d97706; }
+        .pill-badge.red    { background: var(--red-soft);    color: #dc2626; }
+        .pill-badge.indigo { background: var(--indigo-soft); color: var(--indigo); }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <a href="/Dashboard/Index" class="logo-mark">
+                <div class="logo-icon">⬡</div>
+                <div>
+                    <span class="logo-text">Koink</span>
+                    <span class="logo-sub">Panel Administrativo</span>
+                </div>
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <span class="nav-section-label">Principal</span>
+            <a href="/Dashboard/Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">
+                <i class="bi bi-grid-1x2"></i> Dashboard
+            </a>
+
+            <span class="nav-section-label">Gestión</span>
+            <a href="/Admin/Usuarios" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Usuarios" ? "active" : "")">
+                <i class="bi bi-people"></i> Usuarios
+            </a>
+            <a href="/Admin/Transacciones" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Transacciones" ? "active" : "")">
+                <i class="bi bi-arrow-left-right"></i> Transacciones
+            </a>
+            <a href="/Admin/Grupos" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Grupos" ? "active" : "")">
+                <i class="bi bi-piggy-bank"></i> Grupos de Ahorro
+            </a>
+
+            <span class="nav-section-label">Sistema</span>
+            <a href="#" class="nav-link">
+                <i class="bi bi-sliders"></i> Configuración
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-pill">
+                <div class="user-avatar">A</div>
+                <div class="user-info">
+                    <div class="user-name">Administrador</div>
+                    <div class="user-role">Super Admin</div>
+                </div>
+                <a href="/Auth/Logout" class="btn-logout" title="Cerrar sesión">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <div class="main-wrap">
+        <header class="topbar">
+            <span class="topbar-title">@ViewData["Title"]</span>
+            <div class="topbar-actions">
+                <a href="#" class="badge-notif"><i class="bi bi-bell"></i></a>
+                <a href="#" class="badge-notif"><i class="bi bi-question-circle"></i></a>
+            </div>
+        </header>
+
+        <main class="page-content">
+            @RenderBody()
+        </main>
+    </div>
+
+</body>
+</html>

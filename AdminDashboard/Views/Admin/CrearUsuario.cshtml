@@ -1,0 +1,93 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Crear Usuario";
+}
+
+<div class="page-header">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+        <a href="/Admin/Usuarios"
+               style="width:32px;height:32px;background:var(--surface);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);text-decoration:none;font-size:14px;transition:all .15s;"
+               onmouseover="this.style.borderColor='var(--indigo)';this.style.color='var(--indigo)'"
+               onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h1 style="margin:0;">Crear Usuario</h1>
+    </div>
+    <p>Registra un nuevo usuario en la plataforma Koink.</p>
+</div>
+
+<div style="max-width:560px;">
+    <div class="card-panel">
+        <div class="card-panel-header">
+            <div>
+                <h5>Información del usuario</h5>
+                <div class="subtitle">Todos los campos son requeridos</div>
+            </div>
+            <div style="width:38px;height:38px;background:var(--indigo-soft);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--indigo);font-size:18px;">
+                <i class="bi bi-person-plus"></i>
+            </div>
+        </div>
+
+        <div class="card-panel-body">
+            <form method="post" action="/Admin/CrearUsuario">
+                @Html.AntiForgeryToken()
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label-modern">Nombre</label>
+                        <input name="Nombre" type="text" required
+                               placeholder="Ej: Carlos"
+                               class="form-control-modern" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label-modern">Apellido Paterno</label>
+                        <input name="ApePat" type="text" required
+                               placeholder="Ej: García"
+                               class="form-control-modern" />
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label-modern">Apellido Materno</label>
+                        <input name="ApeMate" type="text" required
+                               placeholder="Ej: López"
+                               class="form-control-modern" />
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label-modern">Correo electrónico</label>
+                        <input name="Email" type="email" required
+                               placeholder="usuario@correo.com"
+                               class="form-control-modern" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label-modern">Número de teléfono</label>
+                        <input name="NroTelefono" type="tel" required
+                               placeholder="9XXXXXXXX"
+                               class="form-control-modern" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label-modern">Contraseña</label>
+                        <input name="Password" type="password" required
+                               placeholder="••••••••"
+                               class="form-control-modern" />
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; margin-top:24px; padding-top:20px; border-top:1px solid var(--border);">
+                    <button type="submit" class="btn-primary-modern" style="display:flex; align-items:center; gap:8px;">
+                        <i class="bi bi-check-lg"></i> Crear usuario
+                    </button>
+                    <a href="/Admin/Usuarios"
+                           style="padding:10px 18px; border-radius:10px; border:1.5px solid var(--border); color:var(--text-2); text-decoration:none; font-size:14px; font-weight:500; transition:all .15s;"
+                           onmouseover="this.style.borderColor='var(--indigo)';this.style.color='var(--indigo)'"
+                           onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-2)'">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
